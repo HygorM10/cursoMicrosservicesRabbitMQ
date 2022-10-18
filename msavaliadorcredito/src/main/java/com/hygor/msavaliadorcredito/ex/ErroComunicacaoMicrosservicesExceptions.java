@@ -1,7 +1,6 @@
 package com.hygor.msavaliadorcredito.ex;
 
 import lombok.Getter;
-
 public class ErroComunicacaoMicrosservicesExceptions extends Exception {
 
     @Getter

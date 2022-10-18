@@ -1,11 +1,15 @@
 package com.hygor.msavaliadorcredito.application;
 
-import com.hygor.msavaliadorcredito.domain.model.*;
+import com.hygor.msavaliadorcredito.domain.model.Cartao;
+import com.hygor.msavaliadorcredito.domain.model.CartaoAprovado;
+import com.hygor.msavaliadorcredito.domain.model.CartaoCliente;
+import com.hygor.msavaliadorcredito.domain.model.DadosCliente;
+import com.hygor.msavaliadorcredito.domain.model.RetornoAvaliacaoCliente;
+import com.hygor.msavaliadorcredito.domain.model.SituacaoCliete;
 import com.hygor.msavaliadorcredito.ex.DadosClienteNotFoundException;
 import com.hygor.msavaliadorcredito.ex.ErroComunicacaoMicrosservicesExceptions;
 import com.hygor.msavaliadorcredito.infra.clients.ICartoesResourceClient;
 import com.hygor.msavaliadorcredito.infra.clients.IClienteResourceClient;
-import feign.FeignException;
 import feign.FeignException.FeignClientException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
