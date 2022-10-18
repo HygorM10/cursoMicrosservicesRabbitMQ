@@ -4,12 +4,16 @@ import com.hygor.msavaliadorcredito.domain.model.Cartao;
 import com.hygor.msavaliadorcredito.domain.model.CartaoAprovado;
 import com.hygor.msavaliadorcredito.domain.model.CartaoCliente;
 import com.hygor.msavaliadorcredito.domain.model.DadosCliente;
+import com.hygor.msavaliadorcredito.domain.model.DadosSolicitacaoEmissaoCartao;
+import com.hygor.msavaliadorcredito.domain.model.ProtocoloSolicitacaoCartao;
 import com.hygor.msavaliadorcredito.domain.model.RetornoAvaliacaoCliente;
 import com.hygor.msavaliadorcredito.domain.model.SituacaoCliete;
 import com.hygor.msavaliadorcredito.ex.DadosClienteNotFoundException;
 import com.hygor.msavaliadorcredito.ex.ErroComunicacaoMicrosservicesExceptions;
+import com.hygor.msavaliadorcredito.ex.ErroSolicitacaoCartaoException;
 import com.hygor.msavaliadorcredito.infra.clients.ICartoesResourceClient;
 import com.hygor.msavaliadorcredito.infra.clients.IClienteResourceClient;
+import com.hygor.msavaliadorcredito.infra.clients.infra.mqueue.SolicitacaoEmissaoCartaoPublisher;
 import feign.FeignException.FeignClientException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,8 +30,8 @@ import java.util.stream.Collectors;
 public class AvaliadorClienteService {
 
     private final IClienteResourceClient clientesClient;
-
     private final ICartoesResourceClient cartoesCliente;
+    private final SolicitacaoEmissaoCartaoPublisher emissaoCartaoPublisher;
 
     public SituacaoCliete obterSituacaoCliente(String cpf) throws DadosClienteNotFoundException, ErroComunicacaoMicrosservicesExceptions{
 
@@ -61,7 +66,6 @@ public class AvaliadorClienteService {
                DadosCliente dadosCliente = dadosClienteRespose.getBody();
 
                BigDecimal limiteBasico = cartao.getLimiteBasico();
-               BigDecimal rendaBD = BigDecimal.valueOf(renda);
                BigDecimal idadeBD = BigDecimal.valueOf(dadosCliente.getIdade());
                var fator = idadeBD.divide(BigDecimal.valueOf(10));
                BigDecimal limiteAprovado = fator.multiply(limiteBasico);
@@ -84,6 +88,16 @@ public class AvaliadorClienteService {
            throw new ErroComunicacaoMicrosservicesExceptions(e.getMessage(), status);
        }
 
+    }
+
+    public ProtocoloSolicitacaoCartao solicitarEmissaoDeCartao(DadosSolicitacaoEmissaoCartao dados){
+        try{
+            emissaoCartaoPublisher.solicitarCartao(dados);
+            var protocolo = UUID.randomUUID().toString();
+            return new ProtocoloSolicitacaoCartao(protocolo);
+        }catch (Exception e){
+            throw new ErroSolicitacaoCartaoException(e.getMessage());
+        }
     }
 
 }

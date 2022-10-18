@@ -1,10 +1,13 @@
 package com.hygor.msavaliadorcredito.application;
 
 import com.hygor.msavaliadorcredito.domain.model.DadosAvaliacao;
+import com.hygor.msavaliadorcredito.domain.model.DadosSolicitacaoEmissaoCartao;
+import com.hygor.msavaliadorcredito.domain.model.ProtocoloSolicitacaoCartao;
 import com.hygor.msavaliadorcredito.domain.model.RetornoAvaliacaoCliente;
 import com.hygor.msavaliadorcredito.domain.model.SituacaoCliete;
 import com.hygor.msavaliadorcredito.ex.DadosClienteNotFoundException;
 import com.hygor.msavaliadorcredito.ex.ErroComunicacaoMicrosservicesExceptions;
+import com.hygor.msavaliadorcredito.ex.ErroSolicitacaoCartaoException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +31,7 @@ public class AvaliadorCreditoController {
     }
 
     @GetMapping(value = "situacao-cliente", params = "cpf")
-    public ResponseEntity consultaSituacaoCliente(@RequestParam("cpf") String cpf) {
+    public ResponseEntity consultarSituacaoCliente(@RequestParam("cpf") String cpf) {
 
         try {
             SituacaoCliete situacaoCliete = avaliadorClienteService.obterSituacaoCliente(cpf);
@@ -43,7 +46,6 @@ public class AvaliadorCreditoController {
 
     @PostMapping
     public ResponseEntity realizarAvaliacao(@RequestBody DadosAvaliacao dadosAvaliacao) {
-
         try {
             RetornoAvaliacaoCliente retornoAvaliacaoCliente = avaliadorClienteService.realizarAvaliacao(dadosAvaliacao.getCpf(), dadosAvaliacao.getRenda());
             return ResponseEntity.ok(retornoAvaliacaoCliente);
@@ -52,7 +54,17 @@ public class AvaliadorCreditoController {
         } catch (ErroComunicacaoMicrosservicesExceptions e) {
             return ResponseEntity.status(HttpStatus.resolve(e.getStatus())).body(e.getMessage());
         }
+    }
 
+    @PostMapping("solicitacoes-cartao")
+    public ResponseEntity solicitarCartao(@RequestBody DadosSolicitacaoEmissaoCartao dados) {
+        try {
+            ProtocoloSolicitacaoCartao protocoloSolicitacaoCartao = avaliadorClienteService
+                                                                        .solicitarEmissaoDeCartao(dados);
+            return ResponseEntity.ok(protocoloSolicitacaoCartao);
+        } catch (ErroSolicitacaoCartaoException e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
     }
 
 }
