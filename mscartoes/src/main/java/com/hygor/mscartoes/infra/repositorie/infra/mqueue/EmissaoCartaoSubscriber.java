@@ -8,12 +8,14 @@ import com.hygor.mscartoes.domain.DadosSolicitacaoEmissaoCartao;
 import com.hygor.mscartoes.infra.repositorie.ICartaoRepository;
 import com.hygor.mscartoes.infra.repositorie.IClienteCartaoRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class EmissaoCartaoSubscriber {
 
     private final ICartaoRepository cartaoRepository;
@@ -34,7 +36,7 @@ public class EmissaoCartaoSubscriber {
             clienteCartaoRepository.save(cartaoCliente);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Erro ao receber solicitacao de emissao de cartao: {}", e.getMessage());
         }
 
     }
